@@ -6,72 +6,14 @@ import Animated, {
   withTiming,
   runOnJS
 } from "react-native-reanimated";
-import { StepContentProps } from "../types";
 
-const defaultStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-    width: '100%',
-    paddingVertical: 40,
-    marginTop: 'auto',
-    backgroundColor: 'white',
-    borderTopLeftRadius: 40,
-    borderTopRightRadius: 40,
-  },
-  navigationContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 24,
-    marginTop: 32,
-    width: '100%',
-  },
-  navButton: {
-    backgroundColor: "#007AFF",
-    paddingHorizontal: 20,
-    paddingVertical: 10,
-    borderRadius: 8,
-    minWidth: 80,
-  },
-  navButtonDisabled: {
-    backgroundColor: "#E5E5E5",
-  },
-  navButtonText: {
-    color: "white",
-    fontSize: 14,
-    fontWeight: "600",
-    textAlign: "center",
-  },
-  navButtonTextDisabled: {
-    color: "#999",
-  },
-  indicatorContainer: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  stepIndicator: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: "#E5E5E5",
-    marginHorizontal: 4,
-  },
-  stepIndicatorActive: {
-    backgroundColor: "#007AFF",
-  },
-});
+interface StepContentProps {
+  steps: React.ComponentType[];
+  onClose?: () => void;
+}
 
-const StepContent: React.FC<StepContentProps> = ({ 
-  steps, 
-  onClose,
-  onStepChange,
-  initialStep = 0,
-  showNavigation = true,
-  showIndicators = true,
-  navigationLabels = { previous: 'Previous', next: 'Next' },
-  styles = {}
-}) => {
-  const [currentStep, setCurrentStep] = useState(initialStep);
+const StepContent: React.FC<StepContentProps> = ({ steps, onClose }) => {
+  const [currentStep, setCurrentStep] = useState(0);
   const [isAnimating, setIsAnimating] = useState(false);
   const [contentHeights, setContentHeights] = useState<number[]>([]);
   const opacity = useSharedValue(1);
@@ -80,21 +22,20 @@ const StepContent: React.FC<StepContentProps> = ({
   const updateStep = useCallback((newStep: number) => {
     setCurrentStep(newStep);
     setIsAnimating(false);
-    onStepChange?.(newStep);
-  }, [onStepChange]);
+  }, []);
 
   const measureAllSteps = useCallback((stepIndex: number, measuredHeight: number) => {
     setContentHeights(prev => {
       const newHeights = [...prev];
       newHeights[stepIndex] = measuredHeight;
       
-      if (stepIndex === initialStep && height.value === 0) {
+      if (stepIndex === 0 && height.value === 0) {
         height.value = measuredHeight;
       }
       
       return newHeights;
     });
-  }, [height, initialStep]);
+  }, [height]);
 
   const handleNextStep = useCallback(() => {
     if (currentStep < steps.length - 1 && !isAnimating) {
@@ -144,21 +85,9 @@ const StepContent: React.FC<StepContentProps> = ({
     };
   });
 
-  const mergedStyles = {
-    container: { ...defaultStyles.container, ...styles.container },
-    navigationContainer: { ...defaultStyles.navigationContainer },
-    navButton: { ...defaultStyles.navButton, ...styles.navigationButton },
-    navButtonDisabled: { ...defaultStyles.navButtonDisabled, ...styles.navigationButtonDisabled },
-    navButtonText: { ...defaultStyles.navButtonText, ...styles.navigationButtonText },
-    navButtonTextDisabled: { ...defaultStyles.navButtonTextDisabled, ...styles.navigationButtonTextDisabled },
-    indicatorContainer: { ...defaultStyles.indicatorContainer },
-    stepIndicator: { ...defaultStyles.stepIndicator, ...styles.stepIndicator },
-    stepIndicatorActive: { ...defaultStyles.stepIndicatorActive, ...styles.stepIndicatorActive },
-  };
-
   return (
     <TouchableOpacity 
-      style={mergedStyles.container}
+      style={styles.container}
       onPress={(e) => e.stopPropagation()}
       activeOpacity={1}
     >
@@ -186,61 +115,110 @@ const StepContent: React.FC<StepContentProps> = ({
         </Animated.View>
       </Animated.View>
       
-      {showNavigation && (
-        <View style={mergedStyles.navigationContainer}>
-          <TouchableOpacity
+      <View style={styles.navigationContainer}>
+        <TouchableOpacity
+          style={[
+            styles.navButton,
+            currentStep === 0 && styles.navButtonDisabled,
+          ]}
+          onPress={handlePreviousStep}
+          disabled={currentStep === 0}
+        >
+          <Text
             style={[
-              mergedStyles.navButton,
-              currentStep === 0 && mergedStyles.navButtonDisabled,
+              styles.navButtonText,
+              currentStep === 0 && styles.navButtonTextDisabled,
             ]}
-            onPress={handlePreviousStep}
-            disabled={currentStep === 0}
           >
-            <Text
-              style={[
-                mergedStyles.navButtonText,
-                currentStep === 0 && mergedStyles.navButtonTextDisabled,
-              ]}
-            >
-              {navigationLabels.previous}
-            </Text>
-          </TouchableOpacity>
+            Previous
+          </Text>
+        </TouchableOpacity>
 
-          {showIndicators && (
-            <View style={mergedStyles.indicatorContainer}>
-              {steps.map((_, index) => (
-                <View
-                  key={index}
-                  style={[
-                    mergedStyles.stepIndicator,
-                    index === currentStep && mergedStyles.stepIndicatorActive,
-                  ]}
-                />
-              ))}
-            </View>
-          )}
-
-          <TouchableOpacity
-            style={[
-              mergedStyles.navButton,
-              currentStep === steps.length - 1 && mergedStyles.navButtonDisabled,
-            ]}
-            onPress={handleNextStep}
-            disabled={currentStep === steps.length - 1}
-          >
-            <Text
+        <View style={styles.indicatorContainer}>
+          {steps.map((_, index) => (
+            <View
+              key={index}
               style={[
-                mergedStyles.navButtonText,
-                currentStep === steps.length - 1 && mergedStyles.navButtonTextDisabled,
+                styles.stepIndicator,
+                index === currentStep && styles.stepIndicatorActive,
               ]}
-            >
-              {navigationLabels.next}
-            </Text>
-          </TouchableOpacity>
+            />
+          ))}
         </View>
-      )}
+
+        <TouchableOpacity
+          style={[
+            styles.navButton,
+            currentStep === steps.length - 1 && styles.navButtonDisabled,
+          ]}
+          onPress={handleNextStep}
+          disabled={currentStep === steps.length - 1}
+        >
+          <Text
+            style={[
+              styles.navButtonText,
+              currentStep === steps.length - 1 && styles.navButtonTextDisabled,
+            ]}
+          >
+            Next
+          </Text>
+        </TouchableOpacity>
+      </View>
     </TouchableOpacity>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: 'column',
+    width: '100%',
+    paddingVertical: 40,
+    marginTop: 'auto',
+    backgroundColor: 'white',
+    borderTopLeftRadius: 40,
+    borderTopRightRadius: 40,
+  },
+  navigationContainer: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: 24,
+    marginTop: 32,
+    width: '100%',
+  },
+  indicatorContainer: {
+    flexDirection: 'row',
+    gap: 8,
+  },
+  navButton: {
+    backgroundColor: "#007AFF",
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    borderRadius: 8,
+    minWidth: 80,
+  },
+  navButtonDisabled: {
+    backgroundColor: "#E5E5E5",
+  },
+  navButtonText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "600",
+    textAlign: "center",
+  },
+  navButtonTextDisabled: {
+    color: "#999",
+  },
+  stepIndicator: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: "#E5E5E5",
+    marginHorizontal: 4,
+  },
+  stepIndicatorActive: {
+    backgroundColor: "#007AFF",
+  },
+});
 
 export default StepContent;

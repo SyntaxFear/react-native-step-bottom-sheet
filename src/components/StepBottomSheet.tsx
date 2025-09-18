@@ -1,53 +1,32 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef } from "react";
-import { View, TouchableOpacity, StyleSheet } from "react-native";
+import { View, Text, StyleSheet, TouchableOpacity } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
 import StepContent from "./StepContent";
-import { StepBottomSheetProps } from "../types";
 
-const defaultStyles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  bottomSheetContainer: {
-    flex: 1,
-  },
-  bottomSheetBackground: {
-    backgroundColor: "transparent",
-  },
-  contentContainer: {
-    height: '100%',
-  },
-  touchableContainer: {
-    width: '100%',
-    height: '100%',
-  },
-  innerContainer: {
-    padding: 24,
-    paddingBottom: 24,
-    width: '100%',
-    height: '100%',
-  },
-});
+interface StepBottomSheetProps {
+  steps: React.ComponentType[];
+  onClose?: () => void;
+  snapPoints?: string[];
+  enablePanDownToClose?: boolean;
+  enableDynamicSizing?: boolean;
+  enableOverDrag?: boolean;
+  index?: number;
+  backgroundStyle?: any;
+  handleIndicatorStyle?: any;
+}
 
 export interface StepBottomSheetRef {
-  open: () => void;
-  close: () => void;
   snapToIndex: (index: number) => void;
+  close: () => void;
 }
 
 const StepBottomSheet = forwardRef<StepBottomSheetRef, StepBottomSheetProps>(({
   steps,
-  isVisible = false,
   onClose,
-  onStepChange,
-  stepContentProps = {},
-  containerStyle,
-  contentContainerStyle,
-  backdropProps = {},
   snapPoints = ["100%"],
   enablePanDownToClose = true,
   enableDynamicSizing = true,
@@ -55,15 +34,12 @@ const StepBottomSheet = forwardRef<StepBottomSheetRef, StepBottomSheetProps>(({
   index = -1,
   backgroundStyle,
   handleIndicatorStyle = { height: 0 },
-  onChange,
-  ...bottomSheetProps
 }, ref) => {
   const bottomSheetRef = useRef<BottomSheet>(null);
 
   useImperativeHandle(ref, () => ({
-    open: () => bottomSheetRef.current?.snapToIndex(0),
-    close: () => bottomSheetRef.current?.close(),
     snapToIndex: (index: number) => bottomSheetRef.current?.snapToIndex(index),
+    close: () => bottomSheetRef.current?.close(),
   }));
 
   const handleSheetChanges = useCallback((index: number) => {
@@ -82,50 +58,66 @@ const StepBottomSheet = forwardRef<StepBottomSheetRef, StepBottomSheetProps>(({
         disappearsOnIndex={-1}
         appearsOnIndex={0}
         onPress={handleClosePress}
-        {...backdropProps}
       />
     ),
-    [handleClosePress, backdropProps]
+    [handleClosePress]
   );
 
-  const mergedStyles = {
-    container: StyleSheet.flatten([defaultStyles.container, containerStyle]),
-    bottomSheetBackground: StyleSheet.flatten([defaultStyles.bottomSheetBackground, backgroundStyle]),
-    contentContainer: StyleSheet.flatten([defaultStyles.contentContainer, contentContainerStyle]),
-  };
-
   return (
-    <GestureHandlerRootView style={mergedStyles.container}>
+    <GestureHandlerRootView style={styles.container}>
       <BottomSheet
         snapPoints={snapPoints}
         ref={bottomSheetRef}
-        onChange={onChange || handleSheetChanges}
+        onChange={handleSheetChanges}
         enablePanDownToClose={enablePanDownToClose}
         enableDynamicSizing={enableDynamicSizing}
         enableOverDrag={enableOverDrag}
         index={index}
-        backgroundStyle={mergedStyles.bottomSheetBackground}
-        style={defaultStyles.bottomSheetContainer}
+        backgroundStyle={[styles.bottomSheetBackground, backgroundStyle]}
+        style={styles.bottomSheetContainer}
         backdropComponent={renderBackdrop}
         handleIndicatorStyle={handleIndicatorStyle}
       >
-        <BottomSheetView style={mergedStyles.contentContainer}>
+        <BottomSheetView style={styles.bottomSheetView}>
           <TouchableOpacity
-            style={defaultStyles.touchableContainer}
+            style={styles.touchableContainer}
             onPress={handleClosePress}
             activeOpacity={1}
           >
-            <View style={defaultStyles.innerContainer}>
-              <StepContent 
-                steps={steps} 
-                onClose={handleClosePress}
-              />
+            <View style={styles.innerContainer}>
+              <StepContent steps={steps} onClose={handleClosePress} />
             </View>
           </TouchableOpacity>
         </BottomSheetView>
       </BottomSheet>
     </GestureHandlerRootView>
   );
+});
+
+const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    backgroundColor: "gray",
+  },
+  bottomSheetContainer: {
+    flex: 1,
+  },
+  bottomSheetBackground: {
+    backgroundColor: "transparent",
+  },
+  bottomSheetView: {
+    height: '100%',
+  },
+  touchableContainer: {
+    width: '100%',
+    height: '100%',
+  },
+  innerContainer: {
+    padding: 24,
+    paddingBottom: 24,
+    width: '100%',
+    height: '100%',
+  },
 });
 
 StepBottomSheet.displayName = 'StepBottomSheet';

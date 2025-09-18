@@ -84,11 +84,11 @@ export default function App() {
 ### Basic Usage
 
 ```tsx
-import React from 'react';
-import { View, Text, Button } from 'react-native';
+import React, { useRef, useCallback } from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
-import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
-import { StepBottomSheet, useStepBottomSheet } from 'react-native-step-bottom-sheet';
+import BottomSheet from '@gorhom/bottom-sheet';
+import { StepBottomSheet } from 'react-native-step-bottom-sheet';
 
 // Define your step components
 const WelcomeStep = () => (
@@ -113,19 +113,30 @@ const ReadyStep = () => (
 );
 
 const App = () => {
-  const { ref, open, close } = useStepBottomSheet();
+  const bottomSheetRef = useRef<BottomSheet>(null);
   const steps = [WelcomeStep, SetupStep, ReadyStep];
 
+  const handleOpenPress = useCallback(() => {
+    bottomSheetRef.current?.snapToIndex(0);
+  }, []);
+
+  const handleClosePress = useCallback(() => {
+    bottomSheetRef.current?.close();
+  }, []);
+
   return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Button title="Open Steps" onPress={open} />
-      
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: "gray" }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+        <TouchableOpacity onPress={handleOpenPress}>
+          <Text>Open</Text>
+        </TouchableOpacity>
+      </View>
       <StepBottomSheet
-        ref={ref}
+        ref={bottomSheetRef}
         steps={steps}
-        onClose={close}
+        onClose={handleClosePress}
       />
-    </View>
+    </GestureHandlerRootView>
   );
 };
 ```

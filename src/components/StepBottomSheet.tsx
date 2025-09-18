@@ -1,6 +1,5 @@
 import React, { useCallback, useRef, useImperativeHandle, forwardRef } from "react";
 import { View, TouchableOpacity, StyleSheet } from "react-native";
-import { GestureHandlerRootView } from "react-native-gesture-handler";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
@@ -89,44 +88,41 @@ const StepBottomSheet = forwardRef<StepBottomSheetRef, StepBottomSheetProps>(({
   );
 
   const mergedStyles = {
-    container: StyleSheet.flatten([defaultStyles.container, containerStyle]),
     bottomSheetBackground: StyleSheet.flatten([defaultStyles.bottomSheetBackground, backgroundStyle]),
     contentContainer: StyleSheet.flatten([defaultStyles.contentContainer, contentContainerStyle]),
   };
 
   return (
-    <GestureHandlerRootView style={mergedStyles.container}>
-      <BottomSheet
-        snapPoints={snapPoints}
-        ref={bottomSheetRef}
-        onChange={onChange || handleSheetChanges}
-        enablePanDownToClose={enablePanDownToClose}
-        enableDynamicSizing={enableDynamicSizing}
-        enableOverDrag={enableOverDrag}
-        index={index}
-        backgroundStyle={mergedStyles.bottomSheetBackground}
-        style={defaultStyles.bottomSheetContainer}
-        backdropComponent={renderBackdrop}
-        handleIndicatorStyle={handleIndicatorStyle}
-      >
-        <BottomSheetView style={mergedStyles.contentContainer}>
-          <TouchableOpacity
-            style={defaultStyles.touchableContainer}
-            onPress={handleClosePress}
-            activeOpacity={1}
-          >
-            <View style={defaultStyles.innerContainer}>
-              <StepContent 
-                steps={steps} 
-                onClose={handleClosePress}
-                onStepChange={onStepChange}
-                {...stepContentProps}
-              />
-            </View>
-          </TouchableOpacity>
-        </BottomSheetView>
-      </BottomSheet>
-    </GestureHandlerRootView>
+    <BottomSheet
+      snapPoints={snapPoints}
+      ref={bottomSheetRef}
+      onChange={onChange || handleSheetChanges}
+      enablePanDownToClose={enablePanDownToClose}
+      enableDynamicSizing={enableDynamicSizing}
+      enableOverDrag={enableOverDrag}
+      index={index}
+      backgroundStyle={mergedStyles.bottomSheetBackground}
+      style={defaultStyles.bottomSheetContainer}
+      backdropComponent={renderBackdrop}
+      handleIndicatorStyle={handleIndicatorStyle}
+    >
+      <BottomSheetView style={mergedStyles.contentContainer}>
+        <TouchableOpacity
+          style={defaultStyles.touchableContainer}
+          onPress={handleClosePress}
+          activeOpacity={1}
+        >
+          <View style={defaultStyles.innerContainer}>
+            <StepContent 
+              steps={steps} 
+              onClose={handleClosePress}
+              onStepChange={onStepChange}
+              {...stepContentProps}
+            />
+          </View>
+        </TouchableOpacity>
+      </BottomSheetView>
+    </BottomSheet>
   );
 });
 

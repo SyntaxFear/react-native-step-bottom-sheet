@@ -33,11 +33,61 @@ yarn add @gorhom/bottom-sheet react-native-gesture-handler react-native-reanimat
 
 ## Quick Start
 
+### App Setup
+
+**Important:** Before using the component, you need to set up the required providers in your app's root layout.
+
+#### For Expo Router Apps
+
+Add the providers to your `app/_layout.tsx`:
+
+```tsx
+import { Slot } from "expo-router";
+import { GestureHandlerRootView } from "react-native-gesture-handler";
+import { BottomSheetModalProvider } from "@gorhom/bottom-sheet";
+
+export default function Layout() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <BottomSheetModalProvider>
+        <Slot />
+      </BottomSheetModalProvider>
+    </GestureHandlerRootView>
+  );
+}
+```
+
+#### For React Navigation Apps
+
+Add the providers to your `App.tsx` or root component:
+
+```tsx
+import React from 'react';
+import { NavigationContainer } from '@react-navigation/native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
+import YourNavigator from './YourNavigator';
+
+export default function App() {
+  return (
+    <GestureHandlerRootView style={{ flex: 1 }}>
+      <NavigationContainer>
+        <BottomSheetModalProvider>
+          <YourNavigator />
+        </BottomSheetModalProvider>
+      </NavigationContainer>
+    </GestureHandlerRootView>
+  );
+}
+```
+
 ### Basic Usage
 
 ```tsx
 import React from 'react';
-import { View, Text } from 'react-native';
+import { View, Text, Button } from 'react-native';
+import { GestureHandlerRootView } from 'react-native-gesture-handler';
+import { BottomSheetModalProvider } from '@gorhom/bottom-sheet';
 import { StepBottomSheet, useStepBottomSheet } from 'react-native-step-bottom-sheet';
 
 // Define your step components
@@ -67,7 +117,7 @@ const App = () => {
   const steps = [WelcomeStep, SetupStep, ReadyStep];
 
   return (
-    <View style={{ flex: 1 }}>
+    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
       <Button title="Open Steps" onPress={open} />
       
       <StepBottomSheet
@@ -84,6 +134,7 @@ const App = () => {
 
 ```tsx
 import React from 'react';
+import { View, Button } from 'react-native';
 import { StepBottomSheet, useStepBottomSheet } from 'react-native-step-bottom-sheet';
 
 const App = () => {

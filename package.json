@@ -1,6 +1,6 @@
 {
   "name": "react-native-step-bottom-sheet",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "A customizable step-by-step bottom sheet component for React Native with smooth animations",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
